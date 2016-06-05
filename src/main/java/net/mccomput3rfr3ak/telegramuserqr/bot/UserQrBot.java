@@ -1,13 +1,17 @@
 package net.mccomput3rfr3ak.telegramuserqr.bot;
 
 import net.mccomput3rfr3ak.telegramuserqr.Configuration;
-import net.mccomput3rfr3ak.telegramuserqr.TelegramUserQr;
+import net.mccomput3rfr3ak.telegramuserqr.GenerateQr;
 import org.telegram.telegrambots.TelegramApiException;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
 
 public class UserQrBot extends TelegramLongPollingBot{
@@ -35,11 +39,15 @@ public class UserQrBot extends TelegramLongPollingBot{
         photo.setChatId(message.getChatId().toString());
         photo.setReplayToMessageId(message.getMessageId());
 
-            photo.setNewPhoto(TelegramUserQr.class.getClassLoader().getResource("t_logo.png").getPath(), "t_logo.png");
+        BufferedImage image = GenerateQr.getQrWithOverlay(message.getFrom().getUserName());
 
         try {
+            File file = File.createTempFile("qrcode", ".png");
+            ImageIO.write(image, "png", file);
+            photo.setNewPhoto(file.getAbsolutePath(), "qrcode.png");
             sendPhoto(photo);
-        } catch (TelegramApiException e) {
+            file.delete();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
